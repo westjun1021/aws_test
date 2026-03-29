@@ -1,0 +1,21 @@
+{
+  "name": "동서대 분실물센터",
+  "short_name": "분실물센터",
+  "description": "동서대학교 캠퍼스 분실물 찾기 및 등록 서비스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F8FA",
+  "theme_color": "#1A1F3A",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

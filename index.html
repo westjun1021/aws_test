@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1A1F3A">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>동서대 분실물센터</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --orange: #FF6B35;
+      --orange-lt: #FFF1EC;
+      --orange-dk: #E5521C;
+      --navy: #1A1F3A;
+      --navy-lt: #2D3561;
+      --gray-50: #F8F8FA;
+      --gray-100: #F0F0F4;
+      --gray-200: #E2E2E8;
+      --gray-400: #A0A0B0;
+      --gray-600: #6B6B80;
+      --gray-800: #2C2C40;
+      --white: #FFFFFF;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 2px 8px rgba(26, 31, 58, .06);
+      --shadow-md: 0 4px 20px rgba(26, 31, 58, .10);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100vh;
+    }
+
+    /* ── 헤더 ── */
+    .site-header {
+      background: var(--navy);
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .18);
+    }
+
+    .header-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 34px;
+      height: 34px;
+      background: var(--orange);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.3px;
+    }
+
+    .header-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .4);
+      letter-spacing: .4px;
+      margin-top: 1px;
+    }
+
+    .header-badge {
+      margin-left: auto;
+      background: rgba(255, 107, 53, .18);
+      color: var(--orange);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 107, 53, .3);
+    }
+
+    .main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* ── 지도 ── */
+    .map-wrap {
+      position: relative;
+      margin-bottom: 24px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    #map {
+      height: 260px;
+    }
+
+    .map-label {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(26, 31, 58, .82);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* ── 검색 ── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      pointer-events: none;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--gray-800);
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      outline: none;
+      box-shadow: var(--shadow-sm);
+      transition: border-color .2s;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, .12);
+    }
+
+    /* ── 폼 카드 ── */
+    .form-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .form-card-header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .form-card-header h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--white);
+      flex: 1;
+    }
+
+    .toggle-arrow {
+      color: rgba(255, 255, 255, .5);
+      font-size: 12px;
+      transition: transform .25s;
+    }
+
+    .toggle-arrow.open {
+      transform: rotate(180deg);
+    }
+
+    .form-body {
+      padding: 22px;
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .form-body.open {
+      display: flex;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-group label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-600);
+      letter-spacing: .2px;
+    }
+
+    .field-group input[type="text"],
+    .field-group input[type="password"],
+    .field-group input[type="date"],
+    .field-group select {
+      width: 100%;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      outline: none;
+      appearance: none;
+    }
+
+    .field-group select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A0A0B0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .field-group input:focus,
+    .field-group select:focus {
+      border-color: var(--orange);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, .10);
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .file-upload-area {
+      border: 2px dashed var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .file-upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    #file-preview {
+      width: 100%;
+      height: 220px;
+      object-fit: contain;
+      background-color: var(--gray-100);
+      border-radius: var(--radius-sm);
+      display: none;
+      margin-top: 10px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--orange);
+      color: var(--white);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(255, 107, 53, .35);
+      transition: background .2s;
+    }
+
+    .btn-submit:disabled {
+      background: var(--gray-400);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: #E53E3E;
+      font-weight: 500;
+    }
+
+    .list-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    #item-count {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+
+    #refresh-status {
+      font-size: 11px;
+      color: var(--gray-400);
+    }
+
+    /* ── 아이템 카드 ── */
+    .item-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 12px;
+      animation: fadeUp .35s ease both;
+    }
+
+    .item-card.status-waiting {
+      opacity: 0.8;
+      border-color: var(--orange);
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .item-img {
+      width: 100%;
+      height: 220px;
+      object-fit: contain;
+      background-color: var(--gray-100);
+      border-bottom: 1px solid var(--gray-100);
+      cursor: zoom-in;
+    }
+
+    .item-body {
+      padding: 16px 18px 18px;
+    }
+
+    .item-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .item-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-800);
+      line-height: 1.3;
+    }
+
+    .item-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+
+    .item-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+
+    .badges-wrap {
+      display: flex;
+      gap: 6px;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .cat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .cat-지갑 {
+      background: #FFF8E1;
+      color: #B7791F;
+    }
+
+    .cat-열쇠 {
+      background: #E6FFEE;
+      color: #276749;
+    }
+
+    .cat-전자기기 {
+      background: #EBF8FF;
+      color: #2B6CB0;
+    }
+
+    .cat-의류 {
+      background: #FFF5F5;
+      color: #C53030;
+    }
+
+    .cat-가방 {
+      background: #F0E6FF;
+      color: #6B46C1;
+    }
+
+    .cat-기타 {
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+
+    .status-badge-waiting {
+      background: var(--orange);
+      color: white;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 6px rgba(255, 107, 53, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
+      }
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .btn-claim {
+      background: transparent;
+      color: var(--navy);
+      border: 1.5px solid var(--navy);
+    }
+
+    .btn-claim:hover {
+      background: var(--gray-50);
+    }
+
+    .btn-complete {
+      background: transparent;
+      color: #38A169;
+      border: 1.5px solid #68D391;
+    }
+
+    .btn-complete:hover {
+      background: #F0FFF4;
+    }
+
+    /* ✨ 모달 (이미지 라이트박스) 스타일 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
+    }
+
+    /* 무한 스크롤 하단 로딩바 */
+    .scroll-loading {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: var(--gray-400);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-icon">🔍</div>
+      <div>
+        <div class="header-title">동서대 분실물센터</div>
+        <div class="header-sub">DONGSEO UNIVERSITY</div>
+      </div>
+      <div class="header-badge">● LIVE</div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="map-wrap">
+      <div class="map-label">📍 분실물 위치 지도</div>
+      <div id="map"></div>
+    </div>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" oninput="filterItems()" placeholder="물건 이름, 장소, 카테고리로 검색…">
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-header" onclick="toggleForm()">
+        <span style="font-size:18px">➕</span>
+        <h3>새 분실물 등록하기</h3>
+        <span class="toggle-arrow" id="toggle-arrow">▼</span>
+      </div>
+      <div class="form-body" id="form-body">
+        <div class="row-2">
+          <div class="field-group"><label>물건 이름</label><input type="text" id="itemName" placeholder="예: 검은색 지갑"></div>
+          <div class="field-group">
+            <label>카테고리</label>
+            <select id="category">
+              <option value="">선택하세요</option>
+              <option value="지갑">👛 지갑</option>
+              <option value="열쇠">🔑 열쇠</option>
+              <option value="전자기기">📱 전자기기</option>
+              <option value="의류">👕 의류</option>
+              <option value="가방">🎒 가방</option>
+              <option value="기타">📦 기타</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field-group">
+            <label>습득 장소</label>
+            <input type="text" id="location" list="dsu-buildings" placeholder="건물명 입력">
+            <datalist id="dsu-buildings">
+              <option value="민석도서관">
+              <option value="뉴밀레니엄관">
+              <option value="학생문화관">
+              <option value="U-IT관">
+              <option value="디자인홀">
+              <option value="글로벌빌리지">
+              <option value="경영관">
+              <option value="어문관">
+              <option value="산학협력관">
+              <option value="전자정보관">
+              <option value="국제협력관">
+              <option value="스튜던트플라자(SP)">
+            </datalist>
+          </div>
+          <div class="field-group"><label>습득일</label><input type="date" id="foundDate"></div>
+        </div>
+        <div class="field-group"><label>글 비밀번호 (4자리 · 삭제 시 필요)</label><input type="password" id="itemPin" maxlength="4"
+            placeholder="예: 1234"></div>
+        <div class="field-group">
+          <label>사진 첨부 (선택 · 최대 2MB)</label>
+          <div class="file-upload-area">
+            <input type="file" id="imageFile" accept="image/*" onchange="previewImage(this)">
+            <div style="font-size:26px; margin-bottom:6px;">📷</div>
+            <div style="font-size:13px; color:var(--gray-600); font-weight:500;">클릭하여 사진 선택</div>
+          </div>
+          <img id="file-preview" alt="미리보기">
+        </div>
+        <button class="btn-submit" id="submitBtn" onclick="submitItem()">등록하기</button>
+        <div id="submit-error" class="error-msg"></div>
+      </div>
+    </div>
+
+    <div class="list-top">
+      <span id="item-count"></span>
+      <span id="refresh-status">불러오는 중…</span>
+    </div>
+
+    <div id="lost-items-list"></div>
+    <div id="scroll-trigger"></div>
+  </main>
+
+  <div id="imageModal" class="modal-overlay" onclick="closeModal()">
+    <img id="modalImage" class="modal-content" src="">
+  </div>
+
+  <script>
+    const apiUrl = 'https://6stjihsasi.execute-api.ap-northeast-2.amazonaws.com/default/myFirstApi';
+    let map, markers = [];
+    let allItems = [];      // 서버에서 가져온 전체 데이터
+    let filteredItems = []; // 검색어로 필터링된 데이터
+    let displayCount = 0;   // 현재 화면에 렌더링된 아이템 개수
+    const LOAD_CHUNK = 5;   // 무한 스크롤 시 한 번에 불러올 개수 (테스트를 위해 5개로 설정)
+    let searchTimeout;
+
+    const buildingCoords = { "민석도서관": [35.144326, 129.012557], "뉴밀레니엄관": [35.145299, 129.007515], "학생문화관": [35.143086, 129.006709], "U-IT관": [35.145707, 129.007288], "디자인홀": [35.144746, 129.007758], "글로벌빌리지": [35.146082, 129.007297], "경영관": [35.143714, 129.010358], "어문관": [35.144260, 129.011090], "산학협력관": [35.145363, 129.008613], "전자정보관": [35.144723, 129.009559], "국제협력관": [35.144179, 129.010388], "스튜던트플라자(SP)": [35.145577, 129.009136], "기본값": [35.145311, 129.010214] };
+    const CAT_ICON = { 지갑: '👛', 열쇠: '🔑', 전자기기: '📱', 의류: '👕', 가방: '🎒', 기타: '📦' };
+
+    function escHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+
+    function toggleForm() {
+      const body = document.getElementById('form-body');
+      const arrow = document.getElementById('toggle-arrow');
+      const open = body.classList.toggle('open');
+      arrow.classList.toggle('open', open);
+    }
+
+    function previewImage(input) {
+      const preview = document.getElementById('file-preview');
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+        reader.readAsDataURL(input.files[0]);
+      } else { preview.style.display = 'none'; }
+    }
+
+    // ✨ 이미지 크게 보기(모달) 함수
+    function openModal(imgUrl) {
+      const modal = document.getElementById('imageModal');
+      document.getElementById('modalImage').src = imgUrl;
+      modal.classList.add('show');
+    }
+    function closeModal() {
+      document.getElementById('imageModal').classList.remove('show');
+    }
+
+    function initMap() {
+      map = L.map('map', { zoomControl: false }).setView(buildingCoords["기본값"], 16);
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    }
+
+    function fetchItems() {
+      fetch(apiUrl).then(r => r.json()).then(data => {
+        // 최신순(id 기준) 정렬
+        allItems = data.sort((a, b) => Number(b.id) - Number(a.id));
+        filterItems();
+        updateStatus();
+      }).catch(() => { document.getElementById('lost-items-list').innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-400)">데이터를 불러오지 못했습니다.</div>'; });
+    }
+
+    function updateStatus() {
+      const t = new Date();
+      document.getElementById('refresh-status').textContent = `업데이트 ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function filterItems() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        const kw = document.getElementById('searchInput').value.toLowerCase();
+        filteredItems = allItems.filter(item => (item.itemName || '').toLowerCase().includes(kw) || (item.location || '').toLowerCase().includes(kw) || (item.category || '').toLowerCase().includes(kw));
+
+        // 검색 시 화면 및 지도 초기화
+        document.getElementById('lost-items-list').innerHTML = '';
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        displayCount = 0;
+        document.getElementById('item-count').textContent = `총 ${filteredItems.length}건`;
+
+        // ✨ 지도는 검색된 '모든' 아이템의 위치를 보여줍니다.
+        filteredItems.forEach(item => {
+          let coords = buildingCoords["기본값"];
+          const cl = (item.location || '').replace(/\s+/g, "");
+          for (let b in buildingCoords) { if (b !== "기본값" && cl.includes(b.replace(/\s+/g, ""))) { coords = buildingCoords[b]; break; } }
+          const marker = L.marker(coords).addTo(map).bindPopup(`<b>${escHtml(item.itemName)}</b><br>📍 ${escHtml(item.location)}`);
+          markers.push(marker);
+        });
+        if (markers.length === 1) map.setView(markers[0].getLatLng(), 17);
+        else if (markers.length > 1) map.fitBounds(new L.featureGroup(markers).getBounds(), { padding: [30, 30], maxZoom: 17 });
+
+        // 리스트는 처음 LOAD_CHUNK(5개)만 먼저 그립니다.
+        loadMoreItems();
+      }, 300);
+    }
+
+    // ✨ 무한 스크롤 핵심 렌더링 함수
+    function loadMoreItems() {
+      const listDiv = document.getElementById('lost-items-list');
+      const triggerDiv = document.getElementById('scroll-trigger');
+      const itemsToRender = filteredItems.slice(displayCount, displayCount + LOAD_CHUNK);
+
+      if (itemsToRender.length === 0 && displayCount === 0) {
+        listDiv.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-400)">등록된 분실물이 없습니다.</div>';
+        triggerDiv.innerHTML = ''; return;
+      }
+
+      let parts = '';
+      itemsToRender.forEach((item, idx) => {
+        const cat = item.category || '기타';
+        const delay = (idx * 0.05).toFixed(2);
+
+        // 이미지 클릭 시 openModal 호출
+        const imgHtml = item.imageUrl ? `<img src="${escHtml(item.imageUrl)}" class="item-img" alt="사진" onclick="openModal('${escHtml(item.imageUrl)}')">` : '';
+
+        const isWaiting = item.status === 'waiting';
+        const cardClass = isWaiting ? 'item-card status-waiting' : 'item-card';
+        const waitingBadge = isWaiting ? `<span class="cat-badge status-badge-waiting">⏳ 주인이 수령 대기중</span>` : '';
+        const buttonHtml = isWaiting
+          ? `<button class="btn-action btn-complete" onclick="completeItem('${escHtml(item.id)}')">✅ 전달 완료 (비밀번호 필요)</button>`
+          : `<button class="btn-action btn-claim" onclick="claimItem('${escHtml(item.id)}')">🙋 제 물건입니다 (수령 요청)</button>`;
+
+        parts += `
+        <div class="${cardClass}" style="animation-delay:${delay}s">
+          ${imgHtml}
+          <div class="item-body">
+            <div class="item-top"><div class="item-name">${escHtml(item.itemName)}</div><div class="badges-wrap"><span class="cat-badge cat-${escHtml(cat)}">${CAT_ICON[cat] || '📦'} ${escHtml(cat)}</span>${waitingBadge}</div></div>
+            <div class="item-meta"><div class="item-meta-row"><span>📍</span>${escHtml(item.location)}</div><div class="item-meta-row"><span>📅</span>${escHtml(item.foundDate)}</div></div>
+            ${buttonHtml}
+          </div>
+        </div>`;
+      });
+
+      listDiv.insertAdjacentHTML('beforeend', parts);
+      displayCount += itemsToRender.length;
+
+      if (displayCount < filteredItems.length) {
+        triggerDiv.innerHTML = '<div class="scroll-loading">⬇️ 더 불러오는 중...</div>';
+        observeScroll(); // 옵저버 다시 연결
+      } else {
+        triggerDiv.innerHTML = '<div class="scroll-loading">모든 분실물을 불러왔습니다.</div>';
+      }
+    }
+
+    // ✨ Intersection Observer (화면 맨 아래로 가면 자동으로 loadMoreItems 실행)
+    function observeScroll() {
+      const target = document.querySelector('.scroll-loading');
+      if (!target) return;
+      const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          observer.disconnect(); // 중복 방지를 위해 일단 끊음
+          loadMoreItems();       // 다음 데이터 렌더링
+        }
+      }, { threshold: 0.5 });
+      observer.observe(target);
+    }
+
+    // ✨ S3 직통 업로드 적용된 submit 로직
+    async function submitItem() {
+      const nameVal = document.getElementById('itemName').value.trim(); const catVal = document.getElementById('category').value;
+      const locVal = document.getElementById('location').value.trim(); const dateVal = document.getElementById('foundDate').value;
+      const pinVal = document.getElementById('itemPin').value.trim(); const fileInput = document.getElementById('imageFile');
+      const errDiv = document.getElementById('submit-error'); const btn = document.getElementById('submitBtn');
+
+      errDiv.textContent = '';
+      if (!nameVal || !catVal || !locVal || !dateVal || !pinVal) { errDiv.textContent = '모든 항목을 입력해주세요.'; return; }
+      if (pinVal.length < 4) { errDiv.textContent = '비밀번호는 4자리 이상 입력해주세요.'; return; }
+
+      btn.disabled = true; btn.textContent = '사진 업로드 중… ⏳';
+      let finalImageUrl = "";
+
+      try {
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          if (file.size > 2 * 1024 * 1024) { errDiv.textContent = '사진이 2MB를 초과합니다.'; btn.disabled = false; btn.textContent = '등록하기'; return; }
+
+          // 1. S3 임시 주소 발급 받기
+          const preRes = await fetch(apiUrl, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'getPresignedUrl', contentType: file.type })
+          }).then(r => r.json());
+
+          // 2. 프론트엔드에서 S3로 직접 파일 쏘기
+          await fetch(preRes.uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+          finalImageUrl = preRes.fileUrl; // 성공 시 최종 이미지 주소 저장
+        }
+
+        // 3. 사진 주소와 함께 최종 데이터 DB에 저장하기
+        btn.textContent = '데이터 등록 중… ⏳';
+        const reqData = { itemName: nameVal, category: catVal, location: locVal, foundDate: dateVal, pin: pinVal, imageUrl: finalImageUrl, status: 'active' };
+
+        await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reqData) });
+
+        // 등록 성공 시 초기화
+        ['itemName', 'category', 'location', 'foundDate', 'itemPin', 'searchInput'].forEach(id => document.getElementById(id).value = '');
+        fileInput.value = ''; document.getElementById('file-preview').style.display = 'none';
+        document.getElementById('form-body').classList.remove('open'); document.getElementById('toggle-arrow').classList.remove('open');
+        fetchItems();
+
+      } catch (e) { errDiv.textContent = '등록 중 오류가 발생했습니다.'; }
+      finally { btn.disabled = false; btn.textContent = '등록하기'; }
+    }
+
+    function claimItem(itemId) {
+      const info = prompt('본인 확인을 위해 학번 또는 연락처를 남겨주세요.');
+      if (!info) return;
+      fetch(apiUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: itemId, action: 'claim', claimerInfo: info }) })
+        .then(r => r.json()).then(() => { alert('수령 대기 상태로 변경되었습니다.'); fetchItems(); });
+    }
+
+    function completeItem(itemId) {
+      const pin = prompt('물건 전달이 완료되었나요?\n설정한 4자리 비밀번호(PIN)를 입력하면 삭제됩니다.');
+      if (!pin) return;
+      fetch(apiUrl, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: itemId, pin: pin }) })
+        .then(r => { if (r.status === 403) throw new Error('비번틀림'); return r.json(); })
+        .then(() => { alert('삭제되었습니다.'); fetchItems(); }).catch(() => alert('비밀번호가 일치하지 않습니다.'));
+    }
+
+    initMap(); fetchItems();
+    // PWA 서비스 워커 등록
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker 등록 성공!', reg))
+          .catch(err => console.log('Service Worker 등록 실패:', err));
+      });
+    }
+  </script>
+</body>
+
+</html>
