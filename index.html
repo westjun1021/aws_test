@@ -645,7 +645,16 @@
 
     <div class="list-top">
       <span id="item-count"></span>
-      <span id="refresh-status">불러오는 중…</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button id="sort-btn" onclick="toggleSort()"
+          style="font-size:12px; font-weight:700; color:var(--gray-600);
+                 background:var(--white); border:1.5px solid var(--gray-200);
+                 border-radius:20px; padding:4px 12px; cursor:pointer;
+                 transition: border-color .2s, color .2s;">
+          📅 최신순
+        </button>
+        <span id="refresh-status">불러오는 중…</span>
+      </div>
     </div>
 
     <div id="lost-items-list"></div>
@@ -664,6 +673,31 @@
     let displayCount = 0;   // 현재 화면에 렌더링된 아이템 개수
     const LOAD_CHUNK = 5;   // 무한 스크롤 시 한 번에 불러올 개수 (테스트를 위해 5개로 설정)
     let searchTimeout;
+    let sortOrder = 'desc'; // 'desc' = 최신순, 'asc' = 오래된순
+
+    function applySort() {
+      allItems.sort((a, b) => {
+        const da = new Date(a.foundDate || 0);
+        const db = new Date(b.foundDate || 0);
+        return sortOrder === 'desc' ? db - da : da - db;
+      });
+    }
+
+    function toggleSort() {
+      sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+      const btn = document.getElementById('sort-btn');
+      if (sortOrder === 'asc') {
+        btn.textContent     = '📅 오래된순';
+        btn.style.color     = 'var(--orange)';
+        btn.style.borderColor = 'var(--orange)';
+      } else {
+        btn.textContent     = '📅 최신순';
+        btn.style.color     = 'var(--gray-600)';
+        btn.style.borderColor = 'var(--gray-200)';
+      }
+      applySort();
+      filterItems();
+    }
 
     const buildingCoords = { "민석도서관": [35.144326, 129.012557], "뉴밀레니엄관": [35.145299, 129.007515], "학생문화관": [35.143086, 129.006709], "U-IT관": [35.145707, 129.007288], "디자인홀": [35.144746, 129.007758], "글로벌빌리지": [35.146082, 129.007297], "경영관": [35.143714, 129.010358], "어문관": [35.144260, 129.011090], "산학협력관": [35.145363, 129.008613], "전자정보관": [35.144723, 129.009559], "국제협력관": [35.144179, 129.010388], "스튜던트플라자(SP)": [35.145577, 129.009136], "기본값": [35.145311, 129.010214] };
     const CAT_ICON = { 지갑: '👛', 열쇠: '🔑', 전자기기: '📱', 의류: '👕', 가방: '🎒', 기타: '📦' };
@@ -704,8 +738,9 @@
 
     function fetchItems() {
       fetch(apiUrl).then(r => r.json()).then(data => {
-        // 최신순(id 기준) 정렬
-        allItems = data.sort((a, b) => Number(b.id) - Number(a.id));
+        // 날짜 기준 정렬 (현재 sortOrder 유지)
+        allItems = data;
+        applySort();
         filterItems();
         updateStatus();
       }).catch(() => { document.getElementById('lost-items-list').innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-400)">데이터를 불러오지 못했습니다.</div>'; });
