@@ -184,6 +184,7 @@
       margin-bottom: 24px;
     }
 
+    /* [Fix #4] 접근성: 포커스 스타일 추가 */
     .form-card-header {
       background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
       padding: 18px 22px;
@@ -192,6 +193,11 @@
       gap: 10px;
       cursor: pointer;
       user-select: none;
+    }
+
+    .form-card-header:focus-visible {
+      outline: 2px solid var(--orange);
+      outline-offset: -2px;
     }
 
     .form-card-header h3 {
@@ -433,35 +439,12 @@
       white-space: nowrap;
     }
 
-    .cat-지갑 {
-      background: #FFF8E1;
-      color: #B7791F;
-    }
-
-    .cat-열쇠 {
-      background: #E6FFEE;
-      color: #276749;
-    }
-
-    .cat-전자기기 {
-      background: #EBF8FF;
-      color: #2B6CB0;
-    }
-
-    .cat-의류 {
-      background: #FFF5F5;
-      color: #C53030;
-    }
-
-    .cat-가방 {
-      background: #F0E6FF;
-      color: #6B46C1;
-    }
-
-    .cat-기타 {
-      background: var(--gray-100);
-      color: var(--gray-600);
-    }
+    .cat-지갑 { background: #FFF8E1; color: #B7791F; }
+    .cat-열쇠 { background: #E6FFEE; color: #276749; }
+    .cat-전자기기 { background: #EBF8FF; color: #2B6CB0; }
+    .cat-의류 { background: #FFF5F5; color: #C53030; }
+    .cat-가방 { background: #F0E6FF; color: #6B46C1; }
+    .cat-기타 { background: var(--gray-100); color: var(--gray-600); }
 
     .status-badge-waiting {
       background: var(--orange);
@@ -470,17 +453,9 @@
     }
 
     @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4);
-      }
-
-      70% {
-        box-shadow: 0 0 0 6px rgba(255, 107, 53, 0);
-      }
-
-      100% {
-        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
-      }
+      0%   { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4); }
+      70%  { box-shadow: 0 0 0 6px rgba(255, 107, 53, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
     }
 
     .btn-action {
@@ -500,9 +475,7 @@
       border: 1.5px solid var(--navy);
     }
 
-    .btn-claim:hover {
-      background: var(--gray-50);
-    }
+    .btn-claim:hover { background: var(--gray-50); }
 
     .btn-complete {
       background: transparent;
@@ -510,13 +483,30 @@
       border: 1.5px solid #68D391;
     }
 
-    .btn-complete:hover {
-      background: #F0FFF4;
+    .btn-complete:hover { background: #F0FFF4; }
+
+    /* [Fix #6] 정렬 버튼 CSS 클래스 분리 */
+    #sort-btn {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-600);
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: 20px;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+      font-family: inherit;
     }
 
-    /* ✨ 모달 (이미지 라이트박스) 스타일 */
+    #sort-btn.active {
+      color: var(--orange);
+      border-color: var(--orange);
+    }
+
+    /* [Fix #2] 모달 페이드인 애니메이션 수정: display 대신 visibility 사용 */
     .modal-overlay {
-      display: none;
+      display: flex;
       position: fixed;
       top: 0;
       left: 0;
@@ -528,12 +518,15 @@
       align-items: center;
       cursor: zoom-out;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
     }
 
     .modal-overlay.show {
-      display: flex;
       opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     .modal-content {
@@ -556,6 +549,121 @@
       font-size: 13px;
       color: var(--gray-400);
       font-weight: 700;
+    }
+
+    /* [Fix #5] 커스텀 다이얼로그 모달 */
+    .dialog-overlay {
+      display: flex;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .dialog-overlay.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .dialog-box {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px 20px;
+      width: 320px;
+      max-width: 90vw;
+      box-shadow: var(--shadow-md);
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .dialog-overlay.show .dialog-box {
+      transform: scale(1);
+    }
+
+    .dialog-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 6px;
+    }
+
+    .dialog-desc {
+      font-size: 13px;
+      color: var(--gray-600);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .dialog-input {
+      width: 100%;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      outline: none;
+      margin-bottom: 16px;
+    }
+
+    .dialog-input:focus {
+      border-color: var(--orange);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, .10);
+    }
+
+    .dialog-error {
+      font-size: 12px;
+      color: #E53E3E;
+      font-weight: 500;
+      margin-bottom: 12px;
+      min-height: 16px;
+    }
+
+    .dialog-btns {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .dialog-btn-cancel {
+      padding: 9px 18px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      background: var(--gray-100);
+      color: var(--gray-600);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+
+    .dialog-btn-confirm {
+      padding: 9px 18px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      background: var(--orange);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+
+    .dialog-btn-confirm:disabled {
+      background: var(--gray-400);
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -585,7 +693,11 @@
     </div>
 
     <div class="form-card">
-      <div class="form-card-header" onclick="toggleForm()">
+      <!-- [Fix #4] 접근성: role, tabindex, keydown 추가 -->
+      <div class="form-card-header" onclick="toggleForm()"
+           role="button" tabindex="0"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleForm()}"
+           aria-expanded="false" id="form-card-header">
         <span style="font-size:18px">➕</span>
         <h3>새 분실물 등록하기</h3>
         <span class="toggle-arrow" id="toggle-arrow">▼</span>
@@ -646,13 +758,8 @@
     <div class="list-top">
       <span id="item-count"></span>
       <div style="display:flex; align-items:center; gap:10px;">
-        <button id="sort-btn" onclick="toggleSort()"
-          style="font-size:12px; font-weight:700; color:var(--gray-600);
-                 background:var(--white); border:1.5px solid var(--gray-200);
-                 border-radius:20px; padding:4px 12px; cursor:pointer;
-                 transition: border-color .2s, color .2s;">
-          📅 최신순
-        </button>
+        <!-- [Fix #6] 인라인 스타일 제거 → CSS 클래스로 분리 -->
+        <button id="sort-btn" onclick="toggleSort()">📅 최신순</button>
         <span id="refresh-status">불러오는 중…</span>
       </div>
     </div>
@@ -661,19 +768,55 @@
     <div id="scroll-trigger"></div>
   </main>
 
-  <div id="imageModal" class="modal-overlay" onclick="closeModal()">
-    <img id="modalImage" class="modal-content" src="">
+  <!-- 이미지 라이트박스 모달 -->
+  <div id="imageModal" class="modal-overlay" onclick="closeModal()" role="dialog" aria-modal="true" aria-label="이미지 크게 보기">
+    <img id="modalImage" class="modal-content" src="" alt="분실물 사진 크게 보기">
+  </div>
+
+  <!-- [Fix #5] 수령 요청 커스텀 다이얼로그 -->
+  <div id="claimDialog" class="dialog-overlay" role="dialog" aria-modal="true" aria-labelledby="claimDialogTitle">
+    <div class="dialog-box">
+      <div class="dialog-title" id="claimDialogTitle">🙋 수령 요청</div>
+      <div class="dialog-desc">본인 확인을 위해 학번 또는 연락처를 남겨주세요.</div>
+      <input type="text" id="claimInput" class="dialog-input" placeholder="예: 20230001 / 010-1234-5678">
+      <div id="claimError" class="dialog-error"></div>
+      <div class="dialog-btns">
+        <button class="dialog-btn-cancel" onclick="closeClaimDialog()">취소</button>
+        <button class="dialog-btn-confirm" id="claimConfirmBtn" onclick="submitClaim()">요청하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- [Fix #5] 전달 완료 커스텀 다이얼로그 -->
+  <div id="completeDialog" class="dialog-overlay" role="dialog" aria-modal="true" aria-labelledby="completeDialogTitle">
+    <div class="dialog-box">
+      <div class="dialog-title" id="completeDialogTitle">✅ 전달 완료 처리</div>
+      <div class="dialog-desc">물건 전달이 완료되었나요?<br>설정한 비밀번호(PIN)를 입력하면 삭제됩니다.</div>
+      <input type="password" id="completeInput" class="dialog-input" placeholder="PIN 입력" maxlength="4">
+      <div id="completeError" class="dialog-error"></div>
+      <div class="dialog-btns">
+        <button class="dialog-btn-cancel" onclick="closeCompleteDialog()">취소</button>
+        <button class="dialog-btn-confirm" id="completeConfirmBtn" onclick="submitComplete()">삭제하기</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const apiUrl = 'https://6stjihsasi.execute-api.ap-northeast-2.amazonaws.com/default/myFirstApi';
     let map, markers = [];
-    let allItems = [];      // 서버에서 가져온 전체 데이터
-    let filteredItems = []; // 검색어로 필터링된 데이터
-    let displayCount = 0;   // 현재 화면에 렌더링된 아이템 개수
-    const LOAD_CHUNK = 5;   // 무한 스크롤 시 한 번에 불러올 개수 (테스트를 위해 5개로 설정)
+    let allItems = [];
+    let filteredItems = [];
+    let displayCount = 0;
+    const LOAD_CHUNK = 5;
     let searchTimeout;
-    let sortOrder = 'desc'; // 'desc' = 최신순, 'asc' = 오래된순
+    let sortOrder = 'desc';
+
+    // [Fix #5] 다이얼로그 상태 관리
+    let pendingClaimId = null;
+    let pendingCompleteId = null;
+
+    // [Fix #3] IntersectionObserver 싱글톤
+    let scrollObserver = null;
 
     function applySort() {
       allItems.sort((a, b) => {
@@ -683,32 +826,38 @@
       });
     }
 
+    // [Fix #6] JS 인라인 스타일 대신 CSS 클래스 토글
     function toggleSort() {
       sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
       const btn = document.getElementById('sort-btn');
-      if (sortOrder === 'asc') {
-        btn.textContent     = '📅 오래된순';
-        btn.style.color     = 'var(--orange)';
-        btn.style.borderColor = 'var(--orange)';
-      } else {
-        btn.textContent     = '📅 최신순';
-        btn.style.color     = 'var(--gray-600)';
-        btn.style.borderColor = 'var(--gray-200)';
-      }
+      btn.textContent = sortOrder === 'asc' ? '📅 오래된순' : '📅 최신순';
+      btn.classList.toggle('active', sortOrder === 'asc');
       applySort();
       filterItems();
     }
 
     const buildingCoords = { "민석도서관": [35.144326, 129.012557], "뉴밀레니엄관": [35.145299, 129.007515], "학생문화관": [35.143086, 129.006709], "U-IT관": [35.145707, 129.007288], "디자인홀": [35.144746, 129.007758], "글로벌빌리지": [35.146082, 129.007297], "경영관": [35.143714, 129.010358], "어문관": [35.144260, 129.011090], "산학협력관": [35.145363, 129.008613], "전자정보관": [35.144723, 129.009559], "국제협력관": [35.144179, 129.010388], "스튜던트플라자(SP)": [35.145577, 129.009136], "기본값": [35.145311, 129.010214] };
+
     const CAT_ICON = { 지갑: '👛', 열쇠: '🔑', 전자기기: '📱', 의류: '👕', 가방: '🎒', 기타: '📦' };
 
-    function escHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
     function toggleForm() {
       const body = document.getElementById('form-body');
       const arrow = document.getElementById('toggle-arrow');
+      const header = document.getElementById('form-card-header');
       const open = body.classList.toggle('open');
       arrow.classList.toggle('open', open);
+      // [Fix #4] aria-expanded 동기화
+      header.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
     function previewImage(input) {
@@ -720,15 +869,25 @@
       } else { preview.style.display = 'none'; }
     }
 
-    // ✨ 이미지 크게 보기(모달) 함수
+    // [Fix #2] 모달 열기/닫기 (visibility 방식)
     function openModal(imgUrl) {
       const modal = document.getElementById('imageModal');
       document.getElementById('modalImage').src = imgUrl;
       modal.classList.add('show');
     }
+
     function closeModal() {
       document.getElementById('imageModal').classList.remove('show');
     }
+
+    // [Fix #3] ESC 키로 모달/다이얼로그 닫기
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeClaimDialog();
+        closeCompleteDialog();
+      }
+    });
 
     function initMap() {
       map = L.map('map', { zoomControl: false }).setView(buildingCoords["기본값"], 16);
@@ -738,12 +897,13 @@
 
     function fetchItems() {
       fetch(apiUrl).then(r => r.json()).then(data => {
-        // 날짜 기준 정렬 (현재 sortOrder 유지)
         allItems = data;
         applySort();
         filterItems();
         updateStatus();
-      }).catch(() => { document.getElementById('lost-items-list').innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-400)">데이터를 불러오지 못했습니다.</div>'; });
+      }).catch(() => {
+        document.getElementById('lost-items-list').innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-400)">데이터를 불러오지 못했습니다.</div>';
+      });
     }
 
     function updateStatus() {
@@ -755,32 +915,35 @@
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         const kw = document.getElementById('searchInput').value.toLowerCase();
-        filteredItems = allItems.filter(item => (item.itemName || '').toLowerCase().includes(kw) || (item.location || '').toLowerCase().includes(kw) || (item.category || '').toLowerCase().includes(kw));
+        filteredItems = allItems.filter(item =>
+          (item.itemName || '').toLowerCase().includes(kw) ||
+          (item.location || '').toLowerCase().includes(kw) ||
+          (item.category || '').toLowerCase().includes(kw)
+        );
 
-        // 검색 시 화면 및 지도 초기화
         document.getElementById('lost-items-list').innerHTML = '';
         markers.forEach(m => map.removeLayer(m));
         markers = [];
         displayCount = 0;
         document.getElementById('item-count').textContent = `총 ${filteredItems.length}건`;
 
-        // ✨ 지도는 검색된 '모든' 아이템의 위치를 보여줍니다.
         filteredItems.forEach(item => {
           let coords = buildingCoords["기본값"];
           const cl = (item.location || '').replace(/\s+/g, "");
-          for (let b in buildingCoords) { if (b !== "기본값" && cl.includes(b.replace(/\s+/g, ""))) { coords = buildingCoords[b]; break; } }
+          for (let b in buildingCoords) {
+            if (b !== "기본값" && cl.includes(b.replace(/\s+/g, ""))) { coords = buildingCoords[b]; break; }
+          }
           const marker = L.marker(coords).addTo(map).bindPopup(`<b>${escHtml(item.itemName)}</b><br>📍 ${escHtml(item.location)}`);
           markers.push(marker);
         });
+
         if (markers.length === 1) map.setView(markers[0].getLatLng(), 17);
         else if (markers.length > 1) map.fitBounds(new L.featureGroup(markers).getBounds(), { padding: [30, 30], maxZoom: 17 });
 
-        // 리스트는 처음 LOAD_CHUNK(5개)만 먼저 그립니다.
         loadMoreItems();
       }, 300);
     }
 
-    // ✨ 무한 스크롤 핵심 렌더링 함수
     function loadMoreItems() {
       const listDiv = document.getElementById('lost-items-list');
       const triggerDiv = document.getElementById('scroll-trigger');
@@ -796,22 +959,35 @@
         const cat = item.category || '기타';
         const delay = (idx * 0.05).toFixed(2);
 
-        // 이미지 클릭 시 openModal 호출
-        const imgHtml = item.imageUrl ? `<img src="${escHtml(item.imageUrl)}" class="item-img" alt="사진" onclick="openModal('${escHtml(item.imageUrl)}')">` : '';
+        // [Fix #1] XSS 수정: 이미지 URL을 data 속성으로 분리
+        const imgHtml = item.imageUrl
+          ? `<img src="${escHtml(item.imageUrl)}" class="item-img" alt="사진" data-modal-url="${escHtml(item.imageUrl)}">`
+          : '';
 
         const isWaiting = item.status === 'waiting';
         const cardClass = isWaiting ? 'item-card status-waiting' : 'item-card';
         const waitingBadge = isWaiting ? `<span class="cat-badge status-badge-waiting">⏳ 주인이 수령 대기중</span>` : '';
+
+        // [Fix #1] XSS 수정: item.id를 data 속성으로 분리
         const buttonHtml = isWaiting
-          ? `<button class="btn-action btn-complete" onclick="completeItem('${escHtml(item.id)}')">✅ 전달 완료 (비밀번호 필요)</button>`
-          : `<button class="btn-action btn-claim" onclick="claimItem('${escHtml(item.id)}')">🙋 제 물건입니다 (수령 요청)</button>`;
+          ? `<button class="btn-action btn-complete" data-complete-id="${escHtml(item.id)}">✅ 전달 완료 (비밀번호 필요)</button>`
+          : `<button class="btn-action btn-claim" data-claim-id="${escHtml(item.id)}">🙋 제 물건입니다 (수령 요청)</button>`;
 
         parts += `
         <div class="${cardClass}" style="animation-delay:${delay}s">
           ${imgHtml}
           <div class="item-body">
-            <div class="item-top"><div class="item-name">${escHtml(item.itemName)}</div><div class="badges-wrap"><span class="cat-badge cat-${escHtml(cat)}">${CAT_ICON[cat] || '📦'} ${escHtml(cat)}</span>${waitingBadge}</div></div>
-            <div class="item-meta"><div class="item-meta-row"><span>📍</span>${escHtml(item.location)}</div><div class="item-meta-row"><span>📅</span>${escHtml(item.foundDate)}</div></div>
+            <div class="item-top">
+              <div class="item-name">${escHtml(item.itemName)}</div>
+              <div class="badges-wrap">
+                <span class="cat-badge cat-${escHtml(cat)}">${CAT_ICON[cat] || '📦'} ${escHtml(cat)}</span>
+                ${waitingBadge}
+              </div>
+            </div>
+            <div class="item-meta">
+              <div class="item-meta-row"><span>📍</span>${escHtml(item.location)}</div>
+              <div class="item-meta-row"><span>📅</span>${escHtml(item.foundDate)}</div>
+            </div>
             ${buttonHtml}
           </div>
         </div>`;
@@ -822,37 +998,55 @@
 
       if (displayCount < filteredItems.length) {
         triggerDiv.innerHTML = '<div class="scroll-loading">⬇️ 더 불러오는 중...</div>';
-        observeScroll(); // 옵저버 다시 연결
+        observeScroll();
       } else {
         triggerDiv.innerHTML = '<div class="scroll-loading">모든 분실물을 불러왔습니다.</div>';
       }
     }
 
-    // ✨ Intersection Observer (화면 맨 아래로 가면 자동으로 loadMoreItems 실행)
+    // [Fix #1] 이벤트 위임으로 XSS 완전 차단
+    document.getElementById('lost-items-list').addEventListener('click', e => {
+      const imgEl = e.target.closest('[data-modal-url]');
+      if (imgEl) { openModal(imgEl.dataset.modalUrl); return; }
+
+      const claimBtn = e.target.closest('[data-claim-id]');
+      if (claimBtn) { openClaimDialog(claimBtn.dataset.claimId); return; }
+
+      const completeBtn = e.target.closest('[data-complete-id]');
+      if (completeBtn) { openCompleteDialog(completeBtn.dataset.completeId); return; }
+    });
+
+    // [Fix #3] IntersectionObserver 싱글톤으로 메모리 누수 방지
     function observeScroll() {
       const target = document.querySelector('.scroll-loading');
       if (!target) return;
-      const observer = new IntersectionObserver((entries) => {
+      if (scrollObserver) scrollObserver.disconnect();
+      scrollObserver = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
-          observer.disconnect(); // 중복 방지를 위해 일단 끊음
-          loadMoreItems();       // 다음 데이터 렌더링
+          scrollObserver.disconnect();
+          loadMoreItems();
         }
       }, { threshold: 0.5 });
-      observer.observe(target);
+      scrollObserver.observe(target);
     }
 
-    // ✨ S3 직통 업로드 적용된 submit 로직
+    // ── S3 직통 업로드 submit 로직 ──
     async function submitItem() {
-      const nameVal = document.getElementById('itemName').value.trim(); const catVal = document.getElementById('category').value;
-      const locVal = document.getElementById('location').value.trim(); const dateVal = document.getElementById('foundDate').value;
-      const pinVal = document.getElementById('itemPin').value.trim(); const fileInput = document.getElementById('imageFile');
-      const errDiv = document.getElementById('submit-error'); const btn = document.getElementById('submitBtn');
+      const nameVal = document.getElementById('itemName').value.trim();
+      const catVal = document.getElementById('category').value;
+      const locVal = document.getElementById('location').value.trim();
+      const dateVal = document.getElementById('foundDate').value;
+      const pinVal = document.getElementById('itemPin').value.trim();
+      const fileInput = document.getElementById('imageFile');
+      const errDiv = document.getElementById('submit-error');
+      const btn = document.getElementById('submitBtn');
 
       errDiv.textContent = '';
       if (!nameVal || !catVal || !locVal || !dateVal || !pinVal) { errDiv.textContent = '모든 항목을 입력해주세요.'; return; }
       if (pinVal.length < 4) { errDiv.textContent = '비밀번호는 4자리 이상 입력해주세요.'; return; }
 
-      btn.disabled = true; btn.textContent = '사진 업로드 중… ⏳';
+      btn.disabled = true;
+      btn.textContent = '사진 업로드 중… ⏳';
       let finalImageUrl = "";
 
       try {
@@ -860,49 +1054,99 @@
           const file = fileInput.files[0];
           if (file.size > 2 * 1024 * 1024) { errDiv.textContent = '사진이 2MB를 초과합니다.'; btn.disabled = false; btn.textContent = '등록하기'; return; }
 
-          // 1. S3 임시 주소 발급 받기
           const preRes = await fetch(apiUrl, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'getPresignedUrl', contentType: file.type })
           }).then(r => r.json());
 
-          // 2. 프론트엔드에서 S3로 직접 파일 쏘기
           await fetch(preRes.uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
-          finalImageUrl = preRes.fileUrl; // 성공 시 최종 이미지 주소 저장
+          finalImageUrl = preRes.fileUrl;
         }
 
-        // 3. 사진 주소와 함께 최종 데이터 DB에 저장하기
         btn.textContent = '데이터 등록 중… ⏳';
         const reqData = { itemName: nameVal, category: catVal, location: locVal, foundDate: dateVal, pin: pinVal, imageUrl: finalImageUrl, status: 'active' };
-
         await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reqData) });
 
-        // 등록 성공 시 초기화
         ['itemName', 'category', 'location', 'foundDate', 'itemPin', 'searchInput'].forEach(id => document.getElementById(id).value = '');
-        fileInput.value = ''; document.getElementById('file-preview').style.display = 'none';
-        document.getElementById('form-body').classList.remove('open'); document.getElementById('toggle-arrow').classList.remove('open');
+        fileInput.value = '';
+        document.getElementById('file-preview').style.display = 'none';
+        document.getElementById('form-body').classList.remove('open');
+        document.getElementById('toggle-arrow').classList.remove('open');
+        document.getElementById('form-card-header').setAttribute('aria-expanded', 'false');
         fetchItems();
 
-      } catch (e) { errDiv.textContent = '등록 중 오류가 발생했습니다.'; }
-      finally { btn.disabled = false; btn.textContent = '등록하기'; }
+      } catch (e) {
+        errDiv.textContent = '등록 중 오류가 발생했습니다.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '등록하기';
+      }
     }
 
-    function claimItem(itemId) {
-      const info = prompt('본인 확인을 위해 학번 또는 연락처를 남겨주세요.');
-      if (!info) return;
-      fetch(apiUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: itemId, action: 'claim', claimerInfo: info }) })
-        .then(r => r.json()).then(() => { alert('수령 대기 상태로 변경되었습니다.'); fetchItems(); });
+    // [Fix #5] prompt() 대신 커스텀 다이얼로그
+    function openClaimDialog(itemId) {
+      pendingClaimId = itemId;
+      document.getElementById('claimInput').value = '';
+      document.getElementById('claimError').textContent = '';
+      document.getElementById('claimDialog').classList.add('show');
+      setTimeout(() => document.getElementById('claimInput').focus(), 50);
     }
 
-    function completeItem(itemId) {
-      const pin = prompt('물건 전달이 완료되었나요?\n설정한 4자리 비밀번호(PIN)를 입력하면 삭제됩니다.');
-      if (!pin) return;
-      fetch(apiUrl, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: itemId, pin: pin }) })
+    function closeClaimDialog() {
+      document.getElementById('claimDialog').classList.remove('show');
+      pendingClaimId = null;
+    }
+
+    function submitClaim() {
+      const info = document.getElementById('claimInput').value.trim();
+      const errDiv = document.getElementById('claimError');
+      const btn = document.getElementById('claimConfirmBtn');
+      if (!info) { errDiv.textContent = '학번 또는 연락처를 입력해주세요.'; return; }
+
+      btn.disabled = true;
+      fetch(apiUrl, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: pendingClaimId, action: 'claim', claimerInfo: info })
+      })
+        .then(r => r.json())
+        .then(() => { closeClaimDialog(); fetchItems(); })
+        .catch(() => { errDiv.textContent = '오류가 발생했습니다. 다시 시도해주세요.'; })
+        .finally(() => { btn.disabled = false; });
+    }
+
+    function openCompleteDialog(itemId) {
+      pendingCompleteId = itemId;
+      document.getElementById('completeInput').value = '';
+      document.getElementById('completeError').textContent = '';
+      document.getElementById('completeDialog').classList.add('show');
+      setTimeout(() => document.getElementById('completeInput').focus(), 50);
+    }
+
+    function closeCompleteDialog() {
+      document.getElementById('completeDialog').classList.remove('show');
+      pendingCompleteId = null;
+    }
+
+    function submitComplete() {
+      const pin = document.getElementById('completeInput').value.trim();
+      const errDiv = document.getElementById('completeError');
+      const btn = document.getElementById('completeConfirmBtn');
+      if (!pin) { errDiv.textContent = 'PIN을 입력해주세요.'; return; }
+
+      btn.disabled = true;
+      fetch(apiUrl, {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: pendingCompleteId, pin: pin })
+      })
         .then(r => { if (r.status === 403) throw new Error('비번틀림'); return r.json(); })
-        .then(() => { alert('삭제되었습니다.'); fetchItems(); }).catch(() => alert('비밀번호가 일치하지 않습니다.'));
+        .then(() => { closeCompleteDialog(); fetchItems(); })
+        .catch(() => { errDiv.textContent = '비밀번호가 일치하지 않습니다.'; })
+        .finally(() => { btn.disabled = false; });
     }
 
-    initMap(); fetchItems();
+    initMap();
+    fetchItems();
+
     // PWA 서비스 워커 등록
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
